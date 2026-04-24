@@ -2,6 +2,7 @@ import { useState, useRef } from 'react'
 import { UserCircle, Building2, FileText, Calendar, Info, ScanLine, Check } from 'lucide-react'
 import { colors } from '../tokens/colors'
 import ScreenHeader from '../components/ScreenHeader'
+import Walkthrough from '../components/Walkthrough'
 
 const SF = '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'
 const GT = '"GT Ultra Median", Georgia, serif'
@@ -375,7 +376,7 @@ function UpcomingVisitsCard() {
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 
-export default function Home({ setCurrentScreen }) {
+export default function Home({ setCurrentScreen, showWalkthrough, onWalkthroughComplete }) {
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>
 
@@ -423,7 +424,25 @@ export default function Home({ setCurrentScreen }) {
           <SectionHeader icon={<Calendar size={20} color={colors.forest} />} label="Upcoming Visits" />
           <UpcomingVisitsCard />
         </section>
+
+        <button
+          onClick={() => setCurrentScreen('onboarding')}
+          style={{
+            background:    'none',
+            border:        'none',
+            cursor:        'pointer',
+            fontFamily:    SF,
+            fontSize:      '15px',
+            color:         colors.neutralBody,
+            padding:       '8px',
+            alignSelf:     'center',
+          }}
+        >
+          Restart Onboarding
+        </button>
       </div>
+
+      {showWalkthrough && <Walkthrough onComplete={onWalkthroughComplete} />}
     </div>
   )
 }
