@@ -1,4 +1,5 @@
-import { UserCircle, Bell, Building2, FileText, Calendar, Info, ScanLine } from 'lucide-react'
+import { useState, useRef } from 'react'
+import { UserCircle, Bell, Building2, FileText, Calendar, Info, ScanLine, Check } from 'lucide-react'
 import { colors } from '../tokens/colors'
 
 const SF = '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'
@@ -153,7 +154,40 @@ function TodaysVisitCard() {
 
 // ─── Trip Reports Card ────────────────────────────────────────────────────────
 
-function TripReportsCard() {
+const priorityCard = {
+  date:    'July 7, On-site COV',
+  site:    'Site 879',
+  id:      'KAM7823',
+  status:  'Final Overdue',
+  isCOV:   true,
+}
+
+function TripReportsCard({ setCurrentScreen }) {
+  const [swiped,    setSwiped]    = useState(false)
+  const [completed, setCompleted] = useState(false)
+  const touchStartX               = useRef(null)
+
+  function onTouchStart(e) {
+    touchStartX.current = e.touches[0].clientX
+  }
+
+  function onTouchEnd(e) {
+    if (touchStartX.current === null) return
+    const delta = touchStartX.current - e.changedTouches[0].clientX
+    if (delta > 50)  setSwiped(true)
+    if (delta < -50) setSwiped(false)
+    touchStartX.current = null
+  }
+
+  function onComplete() {
+    if (priorityCard.isCOV) {
+      setCurrentScreen('covModal')
+    } else {
+      setCompleted(true)
+      setSwiped(false)
+    }
+  }
+
   return (
     <>
       <Card>
@@ -194,30 +228,87 @@ function TripReportsCard() {
           <div style={{ fontFamily: SF, fontSize: '12px', fontWeight: 500, color: '#726B6B', marginBottom: '8px' }}>
             Priority
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-              <span style={{ fontFamily: SF, fontSize: '12px', color: colors.neutralBody }}>
-                July 7, On-site COV
-              </span>
-              <span style={{ fontFamily: SF, fontSize: '16px', fontWeight: 600, color: colors.warmBlack }}>
-                Site 879
-              </span>
-              <span style={{ fontFamily: SF, fontSize: '13px', color: colors.neutralBody }}>
-                KAM7823
-              </span>
-            </div>
-            <span style={{
-              backgroundColor: '#FEEDEC',
-              color: '#982B23',
-              fontSize: '12px',
+
+          {completed ? (
+            <div style={{
               fontFamily: SF,
-              borderRadius: '999px',
-              padding: '4px 10px',
-              whiteSpace: 'nowrap',
+              fontSize: '13px',
+              color: colors.neutralBody,
+              textAlign: 'center',
+              padding: '12px 0',
             }}>
-              Final Overdue
-            </span>
-          </div>
+              No priority items.
+            </div>
+          ) : (
+            /* Swipeable row */
+            <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden' }}>
+              {/* Sliding card content */}
+              <div
+                onTouchStart={onTouchStart}
+                onTouchEnd={onTouchEnd}
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  backgroundColor: colors.white,
+                  transform: `translateX(${swiped ? '-80px' : '0'})`,
+                  transition: 'transform 250ms ease-out',
+                  position: 'relative',
+                  zIndex: 1,
+                }}
+              >
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+                  <span style={{ fontFamily: SF, fontSize: '12px', color: colors.neutralBody }}>
+                    {priorityCard.date}
+                  </span>
+                  <span style={{ fontFamily: SF, fontSize: '16px', fontWeight: 600, color: colors.warmBlack }}>
+                    {priorityCard.site}
+                  </span>
+                  <span style={{ fontFamily: SF, fontSize: '13px', color: colors.neutralBody }}>
+                    {priorityCard.id}
+                  </span>
+                </div>
+                <span style={{
+                  backgroundColor: '#FEEDEC',
+                  color: '#982B23',
+                  fontSize: '12px',
+                  fontFamily: SF,
+                  borderRadius: '999px',
+                  padding: '4px 10px',
+                  whiteSpace: 'nowrap',
+                }}>
+                  {priorityCard.status}
+                </span>
+              </div>
+
+              {/* Revealed Complete button */}
+              <button
+                onClick={onComplete}
+                style={{
+                  position: 'absolute',
+                  right: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: '80px',
+                  backgroundColor: colors.forest,
+                  border: 'none',
+                  borderRadius: '0 16px 16px 0',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '4px',
+                  cursor: 'pointer',
+                  zIndex: 0,
+                }}
+              >
+                <Check size={18} color={colors.white} />
+                <span style={{ fontFamily: SF, fontSize: '12px', fontWeight: 600, color: colors.white }}>
+                  Complete
+                </span>
+              </button>
+            </div>
+          )}
         </div>
       </Card>
 
@@ -283,7 +374,7 @@ function UpcomingVisitsCard() {
 
 // ─── Home ─────────────────────────────────────────────────────────────────────
 
-export default function Home() {
+export default function Home({ setCurrentScreen }) {
   return (
     <div style={{ position: 'relative', minHeight: '100%' }}>
 
@@ -365,7 +456,7 @@ export default function Home() {
 
         <section>
           <SectionHeader icon={<FileText size={20} color={colors.forest} />} label="Trip Reports" />
-          <TripReportsCard />
+          <TripReportsCard setCurrentScreen={setCurrentScreen} />
         </section>
 
         <section>

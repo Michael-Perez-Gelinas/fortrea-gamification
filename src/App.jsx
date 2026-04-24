@@ -3,6 +3,8 @@ import { colors } from './tokens/colors'
 import TabBar from './components/TabBar'
 import Onboarding from './screens/Onboarding'
 import Home from './screens/Home'
+import COVModal from './screens/COVModal'
+import EmptyState from './screens/EmptyState'
 
 function Placeholder({ label, setCurrentScreen }) {
   return (
@@ -38,7 +40,7 @@ function Placeholder({ label, setCurrentScreen }) {
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('onboarding')
 
-  const showTabBar = currentScreen !== 'cov-modal' && currentScreen !== 'onboarding'
+  const showTabBar = !['onboarding', 'covModal'].includes(currentScreen)
 
   return (
     <div style={{
@@ -57,8 +59,10 @@ export default function App() {
         }}>
           {currentScreen === 'onboarding' && <Onboarding setCurrentScreen={setCurrentScreen} />}
           {currentScreen === 'home'       && <Home setCurrentScreen={setCurrentScreen} />}
+          {currentScreen === 'emptyState' && <EmptyState />}
           {currentScreen === 'chat'       && <Placeholder label="Chat" />}
           {currentScreen === 'studies'    && <Placeholder label="My Studies" />}
+          {currentScreen === 'covModal'   && <COVModal setCurrentScreen={setCurrentScreen} />}
         </div>
 
         {showTabBar && (
