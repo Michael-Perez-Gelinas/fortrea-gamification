@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { colors } from './tokens/colors'
 import TabBar from './components/TabBar'
 import Onboarding from './screens/Onboarding'
+import Home from './screens/Home'
 
 function Placeholder({ label, setCurrentScreen }) {
   return (
@@ -55,7 +56,7 @@ export default function App() {
           paddingBottom: showTabBar ? '83px' : 0,
         }}>
           {currentScreen === 'onboarding' && <Onboarding setCurrentScreen={setCurrentScreen} />}
-          {currentScreen === 'home'       && <Placeholder label="Home" setCurrentScreen={setCurrentScreen} />}
+          {currentScreen === 'home'       && <Home setCurrentScreen={setCurrentScreen} />}
           {currentScreen === 'chat'       && <Placeholder label="Chat" />}
           {currentScreen === 'studies'    && <Placeholder label="My Studies" />}
         </div>
