@@ -42,7 +42,8 @@ function Placeholder({ label, setCurrentScreen }) {
 }
 
 export default function App() {
-  const [currentScreen, setCurrentScreen] = useState('onboarding')
+  const [currentScreen,   setCurrentScreen]   = useState('onboarding')
+  const [showWalkthrough, setShowWalkthrough] = useState(false)
 
   const showTabBar = !['onboarding', 'covModal', 'badgeModal', 'account', 'myProgress', 'myProgressGamified'].includes(currentScreen)
 
@@ -61,8 +62,19 @@ export default function App() {
           overflowY: 'auto',
           paddingBottom: showTabBar ? '83px' : 0,
         }}>
-          {currentScreen === 'onboarding' && <Onboarding setCurrentScreen={setCurrentScreen} />}
-          {currentScreen === 'home'       && <Home setCurrentScreen={setCurrentScreen} />}
+          {currentScreen === 'onboarding' && (
+            <Onboarding setCurrentScreen={(screen) => {
+              setCurrentScreen(screen)
+              if (screen === 'home') setShowWalkthrough(true)
+            }} />
+          )}
+          {currentScreen === 'home' && (
+            <Home
+              setCurrentScreen={setCurrentScreen}
+              showWalkthrough={showWalkthrough}
+              onWalkthroughComplete={() => setShowWalkthrough(false)}
+            />
+          )}
           {currentScreen === 'emptyState' && <EmptyState />}
           {currentScreen === 'account'    && <Account    setCurrentScreen={setCurrentScreen} />}
           {currentScreen === 'myProgress'         && <MyProgress         setCurrentScreen={setCurrentScreen} />}
