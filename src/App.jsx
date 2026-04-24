@@ -5,6 +5,10 @@ import Onboarding from './screens/Onboarding'
 import Home from './screens/Home'
 import COVModal from './screens/COVModal'
 import EmptyState from './screens/EmptyState'
+import Account from './screens/Account'
+import MyProgress from './screens/MyProgress'
+import MyProgressGamified from './screens/MyProgressGamified'
+import BadgeModal from './screens/BadgeModal'
 
 function Placeholder({ label, setCurrentScreen }) {
   return (
@@ -40,7 +44,7 @@ function Placeholder({ label, setCurrentScreen }) {
 export default function App() {
   const [currentScreen, setCurrentScreen] = useState('onboarding')
 
-  const showTabBar = !['onboarding', 'covModal'].includes(currentScreen)
+  const showTabBar = !['onboarding', 'covModal', 'badgeModal', 'account', 'myProgress', 'myProgressGamified'].includes(currentScreen)
 
   return (
     <div style={{
@@ -60,9 +64,13 @@ export default function App() {
           {currentScreen === 'onboarding' && <Onboarding setCurrentScreen={setCurrentScreen} />}
           {currentScreen === 'home'       && <Home setCurrentScreen={setCurrentScreen} />}
           {currentScreen === 'emptyState' && <EmptyState />}
+          {currentScreen === 'account'    && <Account    setCurrentScreen={setCurrentScreen} />}
+          {currentScreen === 'myProgress'         && <MyProgress         setCurrentScreen={setCurrentScreen} />}
+          {currentScreen === 'myProgressGamified' && <MyProgressGamified setCurrentScreen={setCurrentScreen} />}
           {currentScreen === 'chat'       && <Placeholder label="Chat" />}
           {currentScreen === 'studies'    && <Placeholder label="My Studies" />}
-          {currentScreen === 'covModal'   && <COVModal setCurrentScreen={setCurrentScreen} />}
+          {currentScreen === 'covModal'    && <COVModal    setCurrentScreen={setCurrentScreen} />}
+          {currentScreen === 'badgeModal'  && <BadgeModal  setCurrentScreen={setCurrentScreen} />}
         </div>
 
         {showTabBar && (

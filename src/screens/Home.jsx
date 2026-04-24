@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
-import { UserCircle, Bell, Building2, FileText, Calendar, Info, ScanLine, Check } from 'lucide-react'
+import { UserCircle, Building2, FileText, Calendar, Info, ScanLine, Check } from 'lucide-react'
 import { colors } from '../tokens/colors'
+import ScreenHeader from '../components/ScreenHeader'
 
 const SF = '-apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif'
 const GT = '"GT Ultra Median", Georgia, serif'
@@ -154,22 +155,35 @@ function TodaysVisitCard() {
 
 // ─── Trip Reports Card ────────────────────────────────────────────────────────
 
-const priorityCard = {
-  date:    'July 7, On-site COV',
-  site:    'Site 879',
-  id:      'KAM7823',
-  status:  'Final Overdue',
-  isCOV:   true,
-}
+const priorityRows = [
+  {
+    date:        'July 7, On-site COV',
+    site:        'Site 879',
+    id:          'KAM7823',
+    statusLabel: 'Final Overdue',
+    statusBg:    '#FEEDEC',
+    statusColor: '#982B23',
+    isCOV:       true,
+    destination: 'covModal',
+  },
+  {
+    date:        'July 14, On-site COV',
+    site:        'Site 342',
+    id:          'PRX4421',
+    statusLabel: 'Draft Due Jul 31',
+    statusBg:    '#FFF8E1',
+    statusColor: '#B45309',
+    isCOV:       true,
+    destination: 'badgeModal',
+  },
+]
 
-function TripReportsCard({ setCurrentScreen }) {
+function SwipeableRow({ row, onComplete }) {
   const [swiped,    setSwiped]    = useState(false)
   const [completed, setCompleted] = useState(false)
   const touchStartX               = useRef(null)
 
-  function onTouchStart(e) {
-    touchStartX.current = e.touches[0].clientX
-  }
+  function onTouchStart(e) { touchStartX.current = e.touches[0].clientX }
 
   function onTouchEnd(e) {
     if (touchStartX.current === null) return
@@ -179,146 +193,133 @@ function TripReportsCard({ setCurrentScreen }) {
     touchStartX.current = null
   }
 
-  function onComplete() {
-    if (priorityCard.isCOV) {
-      setCurrentScreen('covModal')
+  function handleComplete() {
+    if (row.isCOV) {
+      onComplete(row.destination)
     } else {
       setCompleted(true)
       setSwiped(false)
     }
   }
 
+  if (completed) return null
+
+  return (
+    <div style={{ position: 'relative', overflow: 'hidden' }}>
+      {/* Sliding content */}
+      <div
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        style={{
+          display:         'flex',
+          justifyContent:  'space-between',
+          alignItems:      'center',
+          backgroundColor:  colors.white,
+          transform:       `translateX(${swiped ? '-80px' : '0'})`,
+          transition:      'transform 250ms ease-out',
+          position:        'relative',
+          zIndex:           1,
+        }}
+      >
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+          <span style={{ fontFamily: SF, fontSize: '12px', color: colors.neutralBody }}>{row.date}</span>
+          <span style={{ fontFamily: SF, fontSize: '16px', fontWeight: 600, color: colors.warmBlack }}>{row.site}</span>
+          <span style={{ fontFamily: SF, fontSize: '13px', color: colors.neutralBody }}>{row.id}</span>
+        </div>
+        <span style={{
+          backgroundColor: row.statusBg,
+          color:           row.statusColor,
+          fontSize:        '12px',
+          fontFamily:       SF,
+          borderRadius:    '999px',
+          padding:         '4px 10px',
+          whiteSpace:      'nowrap',
+        }}>
+          {row.statusLabel}
+        </span>
+      </div>
+
+      {/* Revealed Complete button */}
+      <button
+        onClick={handleComplete}
+        style={{
+          position:        'absolute',
+          right: 0, top: 0, bottom: 0,
+          width:           '80px',
+          backgroundColor:  colors.forest,
+          border:          'none',
+          borderRadius:    '0 16px 16px 0',
+          display:         'flex',
+          flexDirection:   'column',
+          alignItems:      'center',
+          justifyContent:  'center',
+          gap:             '4px',
+          cursor:          'pointer',
+          zIndex:           0,
+        }}
+      >
+        <Check size={18} color={colors.white} />
+        <span style={{ fontFamily: SF, fontSize: '12px', fontWeight: 600, color: colors.white }}>Complete</span>
+      </button>
+    </div>
+  )
+}
+
+function TripReportsCard({ setCurrentScreen }) {
   return (
     <>
       <Card>
         {/* Status row */}
         <div style={{
-          display: 'flex',
-          backgroundColor: colors.neutral50,
-          border: `1px solid ${colors.neutral100}`,
-          borderRadius: '12px',
-          marginBottom: '16px',
-          overflow: 'hidden',
+          display:         'flex',
+          backgroundColor:  colors.neutral50,
+          border:          `1px solid ${colors.neutral100}`,
+          borderRadius:    '12px',
+          marginBottom:    '16px',
+          overflow:        'hidden',
         }}>
           {[
             { count: '0', label: 'Not Started' },
             { count: '1', label: 'In Progress' },
-            { count: '0', label: 'In Review' },
+            { count: '0', label: 'In Review'   },
           ].map(({ count, label }, i) => (
             <div key={label} style={{
-              flex: 1,
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              padding: '12px 8px',
-              borderLeft: i > 0 ? `1px solid ${colors.neutral100}` : 'none',
+              flex:           1,
+              display:        'flex',
+              flexDirection:  'column',
+              alignItems:     'center',
+              padding:        '12px 8px',
+              borderLeft:      i > 0 ? `1px solid ${colors.neutral100}` : 'none',
             }}>
-              <span style={{ fontFamily: SF, fontSize: '15px', fontWeight: 600, color: colors.warmBlack }}>
-                {count}
-              </span>
-              <span style={{ fontFamily: SF, fontSize: '11px', color: colors.neutralBody, marginTop: '2px' }}>
-                {label}
-              </span>
+              <span style={{ fontFamily: SF, fontSize: '15px', fontWeight: 600, color: colors.warmBlack }}>{count}</span>
+              <span style={{ fontFamily: SF, fontSize: '11px', color: colors.neutralBody, marginTop: '2px' }}>{label}</span>
             </div>
           ))}
         </div>
 
-        {/* Priority section */}
+        {/* Priority rows */}
         <div>
           <div style={{ fontFamily: SF, fontSize: '12px', fontWeight: 500, color: '#726B6B', marginBottom: '8px' }}>
             Priority
           </div>
-
-          {completed ? (
-            <div style={{
-              fontFamily: SF,
-              fontSize: '13px',
-              color: colors.neutralBody,
-              textAlign: 'center',
-              padding: '12px 0',
-            }}>
-              No priority items.
-            </div>
-          ) : (
-            /* Swipeable row */
-            <div style={{ position: 'relative', borderRadius: '16px', overflow: 'hidden' }}>
-              {/* Sliding card content */}
-              <div
-                onTouchStart={onTouchStart}
-                onTouchEnd={onTouchEnd}
-                style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  backgroundColor: colors.white,
-                  transform: `translateX(${swiped ? '-80px' : '0'})`,
-                  transition: 'transform 250ms ease-out',
-                  position: 'relative',
-                  zIndex: 1,
-                }}
-              >
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-                  <span style={{ fontFamily: SF, fontSize: '12px', color: colors.neutralBody }}>
-                    {priorityCard.date}
-                  </span>
-                  <span style={{ fontFamily: SF, fontSize: '16px', fontWeight: 600, color: colors.warmBlack }}>
-                    {priorityCard.site}
-                  </span>
-                  <span style={{ fontFamily: SF, fontSize: '13px', color: colors.neutralBody }}>
-                    {priorityCard.id}
-                  </span>
-                </div>
-                <span style={{
-                  backgroundColor: '#FEEDEC',
-                  color: '#982B23',
-                  fontSize: '12px',
-                  fontFamily: SF,
-                  borderRadius: '999px',
-                  padding: '4px 10px',
-                  whiteSpace: 'nowrap',
-                }}>
-                  {priorityCard.status}
-                </span>
+          <div style={{ display: 'flex', flexDirection: 'column' }}>
+            {priorityRows.map((row, i) => (
+              <div key={row.id}>
+                {i > 0 && <div style={{ height: '1px', backgroundColor: colors.neutral100, margin: '8px 0' }} />}
+                <SwipeableRow row={row} onComplete={(dest) => setCurrentScreen(dest)} />
               </div>
-
-              {/* Revealed Complete button */}
-              <button
-                onClick={onComplete}
-                style={{
-                  position: 'absolute',
-                  right: 0,
-                  top: 0,
-                  bottom: 0,
-                  width: '80px',
-                  backgroundColor: colors.forest,
-                  border: 'none',
-                  borderRadius: '0 16px 16px 0',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '4px',
-                  cursor: 'pointer',
-                  zIndex: 0,
-                }}
-              >
-                <Check size={18} color={colors.white} />
-                <span style={{ fontFamily: SF, fontSize: '12px', fontWeight: 600, color: colors.white }}>
-                  Complete
-                </span>
-              </button>
-            </div>
-          )}
+            ))}
+          </div>
         </div>
       </Card>
 
       {/* Sync note — outside card */}
       <p style={{
         fontFamily: SF,
-        fontSize: '13px',
-        color: colors.neutralBody,
-        textAlign: 'center',
-        margin: 0,
+        fontSize:   '13px',
+        color:       colors.neutralBody,
+        textAlign:  'center',
+        margin:      0,
         paddingTop: '8px',
       }}>
         Your list only — Veeva syncs within 24–48 hrs.
@@ -390,54 +391,13 @@ export default function Home({ setCurrentScreen }) {
         pointerEvents: 'none',
       }} />
 
-      {/* Sticky nav */}
-      <div style={{
-        position: 'sticky',
-        top: 0,
-        zIndex: 10,
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
-        backgroundColor: 'rgba(249,245,241,0.75)',
-      }}>
-        {/* User / bell row */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          padding: '8px 16px 4px',
-        }}>
-          <button style={{ background: 'none', border: 'none', padding: '10px', margin: '-10px', cursor: 'pointer' }}>
-            <UserCircle size={20} color={colors.warmBlack} />
-          </button>
-          <button style={{ background: 'none', border: 'none', padding: '10px', margin: '-10px', cursor: 'pointer' }}>
-            <Bell size={20} color={colors.warmBlack} />
-          </button>
-        </div>
-
-        {/* Date / greeting row */}
-        <div style={{ padding: '6px 16px 14px' }}>
-          <div style={{
-            fontFamily: SF,
-            fontSize: '13px',
-            fontWeight: 400,
-            color: colors.neutralBody,
-            letterSpacing: '-0.08px',
-            marginBottom: '2px',
-          }}>
-            Wed, February 12
-          </div>
-          <div style={{
-            fontFamily: GT,
-            fontSize: '34px',
-            fontWeight: 400,
-            color: colors.warmBlack,
-            letterSpacing: '0.4px',
-            lineHeight: '41px',
-          }}>
-            Hi, Steven
-          </div>
-        </div>
-      </div>
+      <ScreenHeader
+        title="Hi, Steven"
+        subtitle="Wed, February 12"
+        leftIcon={<UserCircle size={20} color={colors.warmBlack} />}
+        onLeftAction={() => setCurrentScreen('account')}
+        rightAction="bell"
+      />
 
       {/* Scrollable content */}
       <div style={{
